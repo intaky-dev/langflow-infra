@@ -64,6 +64,7 @@ ide_ingress_host     = "langflow.example.com"
 runtime_ingress_host = "langflow-api.example.com"
 tls_enabled          = true
 cert_manager_enabled = true
+letsencrypt_email    = "admin@example.com"
 
 # Observability
 enable_observability    = true

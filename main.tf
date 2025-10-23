@@ -153,14 +153,13 @@ module "observability" {
   namespace   = kubernetes_namespace.langflow.metadata[0].name
   environment = var.environment
 
-  prometheus_enabled     = var.prometheus_enabled
-  grafana_enabled        = var.grafana_enabled
-  loki_enabled           = var.loki_enabled
+  prometheus_enabled      = var.prometheus_enabled
+  grafana_enabled         = var.grafana_enabled
+  loki_enabled            = var.loki_enabled
 
-  grafana_ingress_host   = var.grafana_ingress_host
   prometheus_storage_size = var.prometheus_storage_size
-  loki_storage_size      = var.loki_storage_size
-  storage_class          = var.storage_class
+  loki_storage_size       = var.loki_storage_size
+  storage_class           = var.storage_class
 }
 
 module "ingress" {
@@ -173,9 +172,10 @@ module "ingress" {
   ingress_class = var.ingress_class
 
   # TLS configuration
-  tls_enabled    = var.tls_enabled
-  cert_manager   = var.cert_manager_enabled
-  tls_secret_name = var.tls_secret_name
+  tls_enabled       = var.tls_enabled
+  cert_manager      = var.cert_manager_enabled
+  tls_secret_name   = var.tls_secret_name
+  letsencrypt_email = var.letsencrypt_email
 
   # Hosts
   ide_host     = var.ide_ingress_host

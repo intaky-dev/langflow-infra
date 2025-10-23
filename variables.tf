@@ -249,6 +249,12 @@ variable "tls_secret_name" {
   default     = "langflow-tls"
 }
 
+variable "letsencrypt_email" {
+  description = "Email for Let's Encrypt certificate notifications"
+  type        = string
+  default     = "admin@example.com"
+}
+
 # Observability Configuration
 variable "enable_observability" {
   description = "Enable observability stack"
