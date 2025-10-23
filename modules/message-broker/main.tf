@@ -48,7 +48,7 @@ resource "helm_release" "rabbitmq" {
       metrics = {
         enabled = true
         serviceMonitor = {
-          enabled = true
+          enabled = false
         }
       }
 
@@ -132,7 +132,7 @@ resource "helm_release" "redis" {
       metrics = {
         enabled = true
         serviceMonitor = {
-          enabled = true
+          enabled = false
         }
       }
 

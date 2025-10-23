@@ -26,19 +26,19 @@ terraform {
 
 # Provider configuration
 provider "kubernetes" {
-  config_path    = var.kubeconfig_path != "" ? var.kubeconfig_path : null
+  config_path    = var.kubeconfig_path != "" ? pathexpand(var.kubeconfig_path) : null
   config_context = var.kube_context != "" ? var.kube_context : null
 }
 
 provider "helm" {
   kubernetes {
-    config_path    = var.kubeconfig_path != "" ? var.kubeconfig_path : null
+    config_path    = var.kubeconfig_path != "" ? pathexpand(var.kubeconfig_path) : null
     config_context = var.kube_context != "" ? var.kube_context : null
   }
 }
 
 provider "kubectl" {
-  config_path    = var.kubeconfig_path != "" ? var.kubeconfig_path : null
+  config_path    = var.kubeconfig_path != "" ? pathexpand(var.kubeconfig_path) : null
   config_context = var.kube_context != "" ? var.kube_context : null
 }
 
@@ -105,7 +105,8 @@ module "langflow_ide" {
   ingress_host     = var.ide_ingress_host
   ingress_class    = var.ingress_class
 
-  resources = var.ide_resources
+  resources        = var.ide_resources
+  enable_monitoring = false
 }
 
 module "langflow_runtime" {
@@ -121,7 +122,8 @@ module "langflow_runtime" {
   broker_url        = module.message_broker.connection_string
   vector_db_url     = module.vector_db.connection_string
 
-  resources = var.runtime_resources
+  resources         = var.runtime_resources
+  enable_monitoring = false
 }
 
 module "keda" {
@@ -143,6 +145,7 @@ module "keda" {
   memory_threshold       = var.keda_memory_threshold
 
   target_deployment = module.langflow_runtime.deployment_name
+  enable_monitoring = false
 }
 
 module "observability" {

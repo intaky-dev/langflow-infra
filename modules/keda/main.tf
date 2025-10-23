@@ -47,13 +47,13 @@ resource "helm_release" "keda" {
         metricServer = {
           enabled = true
           serviceMonitor = {
-            enabled = true
+            enabled = false
           }
         }
         operator = {
           enabled = true
           serviceMonitor = {
-            enabled = true
+            enabled = false
           }
         }
       }

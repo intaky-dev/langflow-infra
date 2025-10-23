@@ -23,7 +23,7 @@ resource "helm_release" "qdrant" {
       replicaCount = var.replicas
 
       image = {
-        tag = "latest"
+        tag = "v1.7.4"
       }
 
       persistence = {

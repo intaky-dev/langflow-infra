@@ -95,7 +95,7 @@ resource "helm_release" "postgresql" {
       metrics = {
         enabled = true
         serviceMonitor = {
-          enabled = true
+          enabled = false
         }
       }
 
