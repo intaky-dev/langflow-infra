@@ -26,20 +26,20 @@ terraform {
 
 # Provider configuration
 provider "kubernetes" {
-  config_path    = var.kubeconfig_path
-  config_context = var.kube_context
+  config_path    = var.kubeconfig_path != "" ? var.kubeconfig_path : null
+  config_context = var.kube_context != "" ? var.kube_context : null
 }
 
 provider "helm" {
   kubernetes {
-    config_path    = var.kubeconfig_path
-    config_context = var.kube_context
+    config_path    = var.kubeconfig_path != "" ? var.kubeconfig_path : null
+    config_context = var.kube_context != "" ? var.kube_context : null
   }
 }
 
 provider "kubectl" {
-  config_path    = var.kubeconfig_path
-  config_context = var.kube_context
+  config_path    = var.kubeconfig_path != "" ? var.kubeconfig_path : null
+  config_context = var.kube_context != "" ? var.kube_context : null
 }
 
 # Create namespace

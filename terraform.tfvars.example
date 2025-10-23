@@ -1,5 +1,7 @@
 # Kubernetes Configuration
-kubeconfig_path = "~/.kube/config"
+# Leave kubeconfig_path empty to use default kubectl configuration
+# or specify a custom path like "/path/to/kubeconfig"
+kubeconfig_path = ""
 kube_context    = ""  # Leave empty for default context
 namespace       = "langflow"
 environment     = "dev"

@@ -1,7 +1,7 @@
 variable "kubeconfig_path" {
-  description = "Path to kubeconfig file"
+  description = "Path to kubeconfig file (leave empty to use default kubectl configuration)"
   type        = string
-  default     = "~/.kube/config"
+  default     = ""
 }
 
 variable "kube_context" {
