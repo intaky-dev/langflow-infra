@@ -13,11 +13,17 @@ resource "helm_release" "postgresql" {
   name       = "postgresql"
   repository = "https://charts.bitnami.com/bitnami"
   chart      = "postgresql-ha"
-  version    = "~> 13.0"
+  version    = "14.2.32"
   namespace  = var.namespace
 
   values = [
     yamlencode({
+      image = {
+        registry = "docker.io"
+        repository = "bitnami/postgresql-repmgr"
+        tag = "16.4.0-debian-12-r7"
+      }
+
       postgresql = {
         replicaCount = var.postgres_replicas
 
@@ -67,6 +73,12 @@ resource "helm_release" "postgresql" {
       }
 
       pgpool = {
+        image = {
+          registry = "docker.io"
+          repository = "bitnami/pgpool"
+          tag = "4.5.4-debian-12-r2"
+        }
+
         replicaCount = 2
 
         adminUsername = "admin"
