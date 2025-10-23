@@ -1,0 +1,75 @@
+# Kubernetes Configuration
+kubeconfig_path = "~/.kube/config"
+kube_context    = ""  # Leave empty for default context
+namespace       = "langflow"
+environment     = "dev"
+
+# Langflow Version
+langflow_version = "1.0.0"  # or "latest"
+
+# Message Broker (rabbitmq or redis)
+broker_type           = "rabbitmq"
+rabbitmq_replicas     = 3
+rabbitmq_storage_size = "10Gi"
+queue_name            = "langflow-tasks"
+
+# Database
+postgres_replicas     = 3
+postgres_storage_size = "20Gi"
+
+# Vector Database (qdrant, weaviate, or milvus)
+vector_db_type         = "qdrant"
+vector_db_replicas     = 2
+vector_db_storage_size = "20Gi"
+
+# Langflow IDE
+ide_replicas = 2
+ide_resources = {
+  requests = {
+    cpu    = "500m"
+    memory = "1Gi"
+  }
+  limits = {
+    cpu    = "2000m"
+    memory = "4Gi"
+  }
+}
+
+# Langflow Runtime Workers
+runtime_min_replicas = 2
+runtime_max_replicas = 10
+runtime_resources = {
+  requests = {
+    cpu    = "1000m"
+    memory = "2Gi"
+  }
+  limits = {
+    cpu    = "4000m"
+    memory = "8Gi"
+  }
+}
+
+# KEDA Autoscaling
+keda_queue_threshold  = 5   # Messages in queue
+keda_cpu_threshold    = 70  # CPU %
+keda_memory_threshold = 80  # Memory %
+
+# Storage
+storage_class = "standard"  # or "gp3", "premium-rwo", etc.
+
+# Ingress
+ingress_enabled      = true
+ingress_class        = "nginx"
+ide_ingress_host     = "langflow.example.com"
+runtime_ingress_host = "langflow-api.example.com"
+tls_enabled          = true
+cert_manager_enabled = true
+
+# Observability
+enable_observability    = true
+prometheus_enabled      = true
+grafana_enabled         = true
+loki_enabled            = true
+grafana_ingress_host    = "grafana.example.com"
+prometheus_storage_size = "50Gi"
+loki_storage_size       = "50Gi"
