@@ -90,6 +90,34 @@ resource "helm_release" "redis" {
         password = random_password.broker_password.result
       }
 
+      # Use latest tag - only tag guaranteed to exist after Bitnami migration
+      image = {
+        registry   = "docker.io"
+        repository = "bitnami/redis"
+        tag        = "latest"
+      }
+
+      sentinel = {
+        enabled = true
+        image = {
+          registry   = "docker.io"
+          repository = "bitnami/redis-sentinel"
+          tag        = "latest"
+        }
+      }
+
+      metrics = {
+        enabled = true
+        image = {
+          registry   = "docker.io"
+          repository = "bitnami/redis-exporter"
+          tag        = "latest"
+        }
+        serviceMonitor = {
+          enabled = false
+        }
+      }
+
       master = {
         persistence = {
           enabled = true
@@ -122,17 +150,6 @@ resource "helm_release" "redis" {
             cpu    = "1000m"
             memory = "1Gi"
           }
-        }
-      }
-
-      sentinel = {
-        enabled = true
-      }
-
-      metrics = {
-        enabled = true
-        serviceMonitor = {
-          enabled = false
         }
       }
 
@@ -190,7 +207,7 @@ resource "kubernetes_config_map" "broker_config" {
 }
 
 locals {
-  broker_host = var.broker_type == "rabbitmq" ? "rabbitmq.${var.namespace}.svc.cluster.local" : "redis-master.${var.namespace}.svc.cluster.local"
+  broker_host = var.broker_type == "rabbitmq" ? "rabbitmq.${var.namespace}.svc.cluster.local" : "redis.${var.namespace}.svc.cluster.local"
   broker_port = var.broker_type == "rabbitmq" ? "5672" : "6379"
 
   connection_string = var.broker_type == "rabbitmq" ? "amqp://langflow:${random_password.broker_password.result}@${local.broker_host}:${local.broker_port}/" : "redis://:${random_password.broker_password.result}@${local.broker_host}:${local.broker_port}/0"

@@ -66,7 +66,7 @@ resource "kubernetes_stateful_set" "langflow_runtime" {
           command = [
             "sh",
             "-c",
-            "until nc -z ${split("://", var.database_url)[1]} 5432; do echo waiting for database; sleep 2; done;"
+            "until nc -z postgresql.${var.namespace}.svc.cluster.local 5432; do echo waiting for database; sleep 2; done;"
           ]
         }
 
@@ -78,6 +78,16 @@ resource "kubernetes_stateful_set" "langflow_runtime" {
           env {
             name  = "LANGFLOW_WORKER_MODE"
             value = "true"
+          }
+
+          env {
+            name  = "LANGFLOW_PORT"
+            value = "8000"
+          }
+
+          env {
+            name  = "LANGFLOW_HOST"
+            value = "0.0.0.0"
           }
 
           env {
@@ -172,7 +182,7 @@ resource "kubernetes_stateful_set" "langflow_runtime" {
               path = "/health"
               port = 8000
             }
-            initial_delay_seconds = 60
+            initial_delay_seconds = 180
             period_seconds        = 10
             timeout_seconds       = 5
             failure_threshold     = 3
@@ -183,7 +193,7 @@ resource "kubernetes_stateful_set" "langflow_runtime" {
               path = "/ready"
               port = 8000
             }
-            initial_delay_seconds = 30
+            initial_delay_seconds = 120
             period_seconds        = 5
             timeout_seconds       = 3
             failure_threshold     = 3

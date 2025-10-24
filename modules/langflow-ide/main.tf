@@ -85,7 +85,7 @@ resource "kubernetes_deployment" "langflow_ide" {
 
           env {
             name  = "LANGFLOW_BACKEND_ONLY"
-            value = "false"
+            value = "true"
           }
 
           # Performance settings
@@ -139,11 +139,10 @@ resource "kubernetes_deployment" "langflow_ide" {
           }
         }
 
+        # Use emptyDir for writable config storage
         volume {
           name = "config"
-          config_map {
-            name = kubernetes_config_map.langflow_ide_config.metadata[0].name
-          }
+          empty_dir {}
         }
       }
     }

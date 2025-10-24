@@ -52,7 +52,7 @@ resource "helm_release" "qdrant" {
       metrics = {
         enabled = true
         serviceMonitor = {
-          enabled = true
+          enabled = false
         }
       }
 
