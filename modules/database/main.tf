@@ -35,14 +35,14 @@ resource "helm_release" "postgresql" {
         }
       }
 
-      # Use chart default version (let chart decide)
+      # PostgreSQL configuration
       postgresql = {
-        # Removed explicit image tag to use chart default
-        # image = {
-        #   registry   = "docker.io"
-        #   repository = "bitnami/postgresql-repmgr"
-        #   tag        = "16.6.0"
-        # }
+        # Explicit image tag required by Terraform Helm provider
+        image = {
+          registry   = "docker.io"
+          repository = "bitnami/postgresql-repmgr"
+          tag        = "17.2.0"
+        }
 
         replicaCount = var.postgres_replicas
 
@@ -124,12 +124,12 @@ resource "helm_release" "postgresql" {
 
       # PgPool Configuration - Load Balancer and Connection Pooler
       pgpool = {
-        # Use chart default image version
-        # image = {
-        #   registry   = "docker.io"
-        #   repository = "bitnami/pgpool"
-        #   tag        = "4.5.4"
-        # }
+        # Explicit image tag required by Terraform Helm provider
+        image = {
+          registry   = "docker.io"
+          repository = "bitnami/pgpool"
+          tag        = "4.6.1"
+        }
 
         replicaCount = var.postgres_replicas >= 3 ? 2 : 1
 
