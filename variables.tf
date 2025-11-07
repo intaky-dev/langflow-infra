@@ -191,6 +191,12 @@ variable "runtime_resources" {
   }
 }
 
+variable "runtime_worker_storage_size" {
+  description = "Storage size for each runtime worker's persistent volume"
+  type        = string
+  default     = "10Gi"
+}
+
 # KEDA Configuration
 variable "keda_queue_threshold" {
   description = "Queue length threshold for KEDA scaling"

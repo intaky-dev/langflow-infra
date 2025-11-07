@@ -79,13 +79,23 @@ resource "kubernetes_deployment" "langflow_ide" {
           }
 
           env {
+            name  = "LANGFLOW_PORT"
+            value = "7860"
+          }
+
+          env {
+            name  = "LANGFLOW_HOST"
+            value = "0.0.0.0"
+          }
+
+          env {
             name  = "LANGFLOW_FRONTEND_PATH"
             value = "/app/frontend"
           }
 
           env {
             name  = "LANGFLOW_BACKEND_ONLY"
-            value = "true"
+            value = "false"
           }
 
           # Performance settings
@@ -116,10 +126,10 @@ resource "kubernetes_deployment" "langflow_ide" {
               path = "/health"
               port = 7860
             }
-            initial_delay_seconds = 60
+            initial_delay_seconds = 180
             period_seconds        = 10
             timeout_seconds       = 5
-            failure_threshold     = 3
+            failure_threshold     = 6
           }
 
           readiness_probe {
@@ -127,10 +137,10 @@ resource "kubernetes_deployment" "langflow_ide" {
               path = "/health"
               port = 7860
             }
-            initial_delay_seconds = 30
-            period_seconds        = 5
-            timeout_seconds       = 3
-            failure_threshold     = 3
+            initial_delay_seconds = 120
+            period_seconds        = 10
+            timeout_seconds       = 5
+            failure_threshold     = 6
           }
 
           volume_mount {

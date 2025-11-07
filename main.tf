@@ -127,12 +127,14 @@ module "langflow_runtime" {
   namespace   = kubernetes_namespace.langflow.metadata[0].name
   environment = var.environment
 
-  image_tag     = var.langflow_version
-  min_replicas  = var.runtime_min_replicas
-  max_replicas  = var.runtime_max_replicas
-  database_url  = module.database.connection_string
-  broker_url    = module.message_broker.connection_string
-  vector_db_url = module.vector_db.connection_string
+  image_tag           = var.langflow_version
+  min_replicas        = var.runtime_min_replicas
+  max_replicas        = var.runtime_max_replicas
+  database_url        = module.database.connection_string
+  broker_url          = module.message_broker.connection_string
+  vector_db_url       = module.vector_db.connection_string
+  storage_class       = local.detected_storage_class
+  worker_storage_size = var.runtime_worker_storage_size
 
   resources         = var.runtime_resources
   enable_monitoring = false
