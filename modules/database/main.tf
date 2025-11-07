@@ -35,13 +35,14 @@ resource "helm_release" "postgresql" {
         }
       }
 
-      # Use specific version for reproducible deployments
+      # Use chart default version (let chart decide)
       postgresql = {
-        image = {
-          registry   = "docker.io"
-          repository = "bitnami/postgresql-repmgr"
-          tag        = "16.6.0"
-        }
+        # Removed explicit image tag to use chart default
+        # image = {
+        #   registry   = "docker.io"
+        #   repository = "bitnami/postgresql-repmgr"
+        #   tag        = "16.6.0"
+        # }
 
         replicaCount = var.postgres_replicas
 
@@ -123,11 +124,12 @@ resource "helm_release" "postgresql" {
 
       # PgPool Configuration - Load Balancer and Connection Pooler
       pgpool = {
-        image = {
-          registry   = "docker.io"
-          repository = "bitnami/pgpool"
-          tag        = "4.5.4"
-        }
+        # Use chart default image version
+        # image = {
+        #   registry   = "docker.io"
+        #   repository = "bitnami/pgpool"
+        #   tag        = "4.5.4"
+        # }
 
         replicaCount = var.postgres_replicas >= 3 ? 2 : 1
 
