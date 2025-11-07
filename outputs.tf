@@ -53,11 +53,11 @@ output "grafana_url" {
 output "keda_scaler_status" {
   description = "KEDA scaler configuration"
   value = {
-    min_replicas         = var.runtime_min_replicas
-    max_replicas         = var.runtime_max_replicas
-    queue_threshold      = var.keda_queue_threshold
-    cpu_threshold        = var.keda_cpu_threshold
-    memory_threshold     = var.keda_memory_threshold
+    min_replicas     = var.runtime_min_replicas
+    max_replicas     = var.runtime_max_replicas
+    queue_threshold  = var.keda_queue_threshold
+    cpu_threshold    = var.keda_cpu_threshold
+    memory_threshold = var.keda_memory_threshold
   }
 }
 

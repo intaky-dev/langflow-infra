@@ -224,24 +224,59 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "langflow_ide" {
     min_replicas = var.replicas
     max_replicas = var.replicas * 3
 
+    # CPU-based scaling
     metric {
       type = "Resource"
       resource {
         name = "cpu"
         target {
           type                = "Utilization"
-          average_utilization = 70
+          average_utilization = 70 # Scale up when CPU > 70%
         }
       }
     }
 
+    # Memory-based scaling
     metric {
       type = "Resource"
       resource {
         name = "memory"
         target {
           type                = "Utilization"
-          average_utilization = 80
+          average_utilization = 80 # Scale up when memory > 80%
+        }
+      }
+    }
+
+    # Scaling behavior to prevent flapping
+    behavior {
+      scale_up {
+        stabilization_window_seconds = 60 # Wait 60s before scaling up again
+        select_policy                = "Max"
+        policy {
+          type           = "Percent"
+          value          = 100 # Scale up by 100% (double pods)
+          period_seconds = 60
+        }
+        policy {
+          type           = "Pods"
+          value          = 2 # Or add 2 pods
+          period_seconds = 60
+        }
+      }
+
+      scale_down {
+        stabilization_window_seconds = 300 # Wait 5 min before scaling down
+        select_policy                = "Min"
+        policy {
+          type           = "Percent"
+          value          = 50 # Scale down by 50% max
+          period_seconds = 60
+        }
+        policy {
+          type           = "Pods"
+          value          = 1 # Or remove 1 pod at a time
+          period_seconds = 60
         }
       }
     }

@@ -25,3 +25,9 @@ variable "storage_class" {
   type        = string
   default     = "standard"
 }
+
+variable "enable_network_policy" {
+  description = "Enable network policies for database security"
+  type        = bool
+  default     = true
+}

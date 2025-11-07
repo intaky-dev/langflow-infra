@@ -27,10 +27,21 @@ variable "environment" {
   }
 }
 
+variable "cloud_provider" {
+  description = "Cloud provider (aws, gcp, azure, onprem) - used for storage class detection"
+  type        = string
+  default     = "onprem"
+
+  validation {
+    condition     = contains(["aws", "gcp", "azure", "onprem"], var.cloud_provider)
+    error_message = "Cloud provider must be aws, gcp, azure, or onprem."
+  }
+}
+
 variable "langflow_version" {
   description = "Langflow version/image tag"
   type        = string
-  default     = "latest"
+  default     = "1.0.18"
 }
 
 # Message Broker Configuration
@@ -120,7 +131,7 @@ variable "ide_replicas" {
 }
 
 variable "ide_resources" {
-  description = "Resource requests and limits for IDE"
+  description = "Resource requests and limits for IDE. For production, consider using environment-specific values."
   type = object({
     requests = object({
       cpu    = string
@@ -133,12 +144,12 @@ variable "ide_resources" {
   })
   default = {
     requests = {
-      cpu    = "500m"
-      memory = "1Gi"
+      cpu    = "250m"  # Reduced from 500m - IDE is mostly I/O bound
+      memory = "512Mi" # Reduced from 1Gi - serves static assets and UI
     }
     limits = {
-      cpu    = "2000m"
-      memory = "4Gi"
+      cpu    = "1000m" # Reduced from 2000m - more reasonable 4x multiplier
+      memory = "2Gi"   # Reduced from 4Gi - prevents resource waste
     }
   }
 }
@@ -157,7 +168,7 @@ variable "runtime_max_replicas" {
 }
 
 variable "runtime_resources" {
-  description = "Resource requests and limits for Runtime workers"
+  description = "Resource requests and limits for Runtime workers. Workers execute flows and may need more resources for AI/ML workloads."
   type = object({
     requests = object({
       cpu    = string
@@ -170,12 +181,12 @@ variable "runtime_resources" {
   })
   default = {
     requests = {
-      cpu    = "1000m"
-      memory = "2Gi"
+      cpu    = "500m" # Reduced from 1000m - scales up via KEDA when needed
+      memory = "1Gi"  # Reduced from 2Gi - sufficient for most flows
     }
     limits = {
-      cpu    = "4000m"
-      memory = "8Gi"
+      cpu    = "2000m" # Reduced from 4000m - still 4x multiplier for bursts
+      memory = "4Gi"   # Reduced from 8Gi - prevents single pod from consuming too much
     }
   }
 }
@@ -201,9 +212,9 @@ variable "keda_memory_threshold" {
 
 # Storage Configuration
 variable "storage_class" {
-  description = "Storage class for persistent volumes"
+  description = "Storage class for persistent volumes. Leave empty for automatic detection based on cloud_provider."
   type        = string
-  default     = "standard"
+  default     = ""
 }
 
 # Ingress Configuration
@@ -296,4 +307,11 @@ variable "loki_storage_size" {
   description = "Storage size for Loki"
   type        = string
   default     = "50Gi"
+}
+
+# Network Policy Configuration
+variable "enable_network_policies" {
+  description = "Enable network policies for enhanced security and network segmentation"
+  type        = bool
+  default     = true
 }

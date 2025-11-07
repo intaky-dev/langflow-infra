@@ -11,7 +11,7 @@ variable "environment" {
 variable "image_tag" {
   description = "Langflow image tag"
   type        = string
-  default     = "latest"
+  default     = "1.0.18"
 }
 
 variable "replicas" {
@@ -70,6 +70,12 @@ variable "resources" {
 
 variable "enable_monitoring" {
   description = "Enable Prometheus ServiceMonitor"
+  type        = bool
+  default     = true
+}
+
+variable "enable_network_policy" {
+  description = "Enable network policies for IDE security"
   type        = bool
   default     = true
 }

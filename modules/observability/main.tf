@@ -105,12 +105,12 @@ resource "helm_release" "prometheus_stack" {
           "dashboardproviders.yaml" = {
             apiVersion = 1
             providers = [{
-              name      = "default"
-              orgId     = 1
-              folder    = ""
-              type      = "file"
+              name            = "default"
+              orgId           = 1
+              folder          = ""
+              type            = "file"
               disableDeletion = false
-              editable  = true
+              editable        = true
               options = {
                 path = "/var/lib/grafana/dashboards/default"
               }
@@ -121,18 +121,18 @@ resource "helm_release" "prometheus_stack" {
         dashboards = {
           default = {
             langflow-overview = {
-              gnetId    = 15759  # Generic application dashboard
-              revision  = 1
+              gnetId     = 15759 # Generic application dashboard
+              revision   = 1
               datasource = "Prometheus"
             }
             kubernetes-cluster = {
-              gnetId    = 7249
-              revision  = 1
+              gnetId     = 7249
+              revision   = 1
               datasource = "Prometheus"
             }
             postgresql = {
-              gnetId    = 9628
-              revision  = 7
+              gnetId     = 9628
+              revision   = 7
               datasource = "Prometheus"
             }
           }
@@ -265,9 +265,9 @@ resource "helm_release" "loki" {
         replicas = 1
 
         persistence = {
-          enabled          = true
-          storageClass     = var.storage_class
-          size             = var.loki_storage_size
+          enabled      = true
+          storageClass = var.storage_class
+          size         = var.loki_storage_size
         }
 
         resources = {
@@ -396,7 +396,7 @@ resource "kubectl_manifest" "langflow_alerts" {
     }
     spec = {
       groups = [{
-        name = "langflow"
+        name     = "langflow"
         interval = "30s"
         rules = [
           {

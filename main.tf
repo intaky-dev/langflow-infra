@@ -69,6 +69,9 @@ module "message_broker" {
   # Redis specific
   redis_replicas     = var.redis_replicas
   redis_storage_size = var.redis_storage_size
+
+  # Security
+  enable_network_policy = var.enable_network_policies
 }
 
 module "database" {
@@ -78,7 +81,10 @@ module "database" {
   environment       = var.environment
   postgres_replicas = var.postgres_replicas
   storage_size      = var.postgres_storage_size
-  storage_class     = var.storage_class
+  storage_class     = local.detected_storage_class
+
+  # Security
+  enable_network_policy = var.enable_network_policies
 }
 
 module "vector_db" {
@@ -89,7 +95,10 @@ module "vector_db" {
   vector_db     = var.vector_db_type # "qdrant", "weaviate", or "milvus"
   replicas      = var.vector_db_replicas
   storage_size  = var.vector_db_storage_size
-  storage_class = var.storage_class
+  storage_class = local.detected_storage_class
+
+  # Security
+  enable_network_policy = var.enable_network_policies
 }
 
 module "langflow_ide" {
@@ -98,15 +107,18 @@ module "langflow_ide" {
   namespace   = kubernetes_namespace.langflow.metadata[0].name
   environment = var.environment
 
-  image_tag        = var.langflow_version
-  replicas         = var.ide_replicas
-  database_url     = module.database.connection_string
-  ingress_enabled  = var.ingress_enabled
-  ingress_host     = var.ide_ingress_host
-  ingress_class    = var.ingress_class
+  image_tag       = var.langflow_version
+  replicas        = var.ide_replicas
+  database_url    = module.database.connection_string
+  ingress_enabled = var.ingress_enabled
+  ingress_host    = var.ide_ingress_host
+  ingress_class   = var.ingress_class
 
-  resources        = var.ide_resources
+  resources         = var.ide_resources
   enable_monitoring = false
+
+  # Security
+  enable_network_policy = var.enable_network_policies
 }
 
 module "langflow_runtime" {
@@ -115,15 +127,18 @@ module "langflow_runtime" {
   namespace   = kubernetes_namespace.langflow.metadata[0].name
   environment = var.environment
 
-  image_tag         = var.langflow_version
-  min_replicas      = var.runtime_min_replicas
-  max_replicas      = var.runtime_max_replicas
-  database_url      = module.database.connection_string
-  broker_url        = module.message_broker.connection_string
-  vector_db_url     = module.vector_db.connection_string
+  image_tag     = var.langflow_version
+  min_replicas  = var.runtime_min_replicas
+  max_replicas  = var.runtime_max_replicas
+  database_url  = module.database.connection_string
+  broker_url    = module.message_broker.connection_string
+  vector_db_url = module.vector_db.connection_string
 
   resources         = var.runtime_resources
   enable_monitoring = false
+
+  # Security
+  enable_network_policy = var.enable_network_policies
 }
 
 module "keda" {
@@ -156,13 +171,13 @@ module "observability" {
   namespace   = kubernetes_namespace.langflow.metadata[0].name
   environment = var.environment
 
-  prometheus_enabled      = var.prometheus_enabled
-  grafana_enabled         = var.grafana_enabled
-  loki_enabled            = var.loki_enabled
+  prometheus_enabled = var.prometheus_enabled
+  grafana_enabled    = var.grafana_enabled
+  loki_enabled       = var.loki_enabled
 
   prometheus_storage_size = var.prometheus_storage_size
   loki_storage_size       = var.loki_storage_size
-  storage_class           = var.storage_class
+  storage_class           = local.detected_storage_class
 }
 
 module "ingress" {

@@ -137,11 +137,11 @@ resource "helm_release" "milvus" {
       }
 
       pulsar = {
-        enabled = false  # Use external message broker
+        enabled = false # Use external message broker
       }
 
       kafka = {
-        enabled = false  # Use external message broker
+        enabled = false # Use external message broker
       }
 
       etcd = {
@@ -154,7 +154,7 @@ resource "helm_release" "milvus" {
       }
 
       minio = {
-        mode = "distributed"
+        mode     = "distributed"
         replicas = 4
         persistence = {
           enabled      = true
@@ -241,4 +241,229 @@ locals {
   port = var.vector_db == "qdrant" ? "6333" : var.vector_db == "weaviate" ? "8080" : "19530"
 
   connection_string = var.vector_db == "qdrant" ? "http://${local.host}:${local.port}" : var.vector_db == "weaviate" ? "http://${local.host}:${local.port}" : "${local.host}:${local.port}"
+}
+
+# Network Policy for Qdrant
+# Restricts access to only Langflow Runtime workers
+resource "kubernetes_network_policy" "qdrant" {
+  count = var.enable_network_policy && var.vector_db == "qdrant" ? 1 : 0
+
+  metadata {
+    name      = "qdrant-network-policy"
+    namespace = var.namespace
+    labels    = local.labels
+  }
+
+  spec {
+    pod_selector {
+      match_labels = {
+        app = "qdrant"
+      }
+    }
+
+    policy_types = ["Ingress", "Egress"]
+
+    # Ingress rules - who can connect TO Qdrant
+    ingress {
+      # Allow from Langflow Runtime workers
+      from {
+        pod_selector {
+          match_labels = {
+            app = "langflow-runtime"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "6333" # HTTP API
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "6334" # gRPC API
+      }
+    }
+
+    # Egress rules - where Qdrant can connect TO
+    egress {
+      # Allow DNS resolution
+      to {
+        namespace_selector {}
+      }
+
+      ports {
+        protocol = "UDP"
+        port     = "53"
+      }
+    }
+
+    egress {
+      # Allow external connections if needed
+      to {
+        ip_block {
+          cidr = "0.0.0.0/0"
+        }
+      }
+    }
+  }
+}
+
+# Network Policy for Weaviate
+# Restricts access to only Langflow Runtime workers
+resource "kubernetes_network_policy" "weaviate" {
+  count = var.enable_network_policy && var.vector_db == "weaviate" ? 1 : 0
+
+  metadata {
+    name      = "weaviate-network-policy"
+    namespace = var.namespace
+    labels    = local.labels
+  }
+
+  spec {
+    pod_selector {
+      match_labels = {
+        app = "weaviate"
+      }
+    }
+
+    policy_types = ["Ingress", "Egress"]
+
+    # Ingress rules - who can connect TO Weaviate
+    ingress {
+      # Allow from Langflow Runtime workers
+      from {
+        pod_selector {
+          match_labels = {
+            app = "langflow-runtime"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "8080" # HTTP API
+      }
+    }
+
+    # Egress rules - where Weaviate can connect TO
+    egress {
+      # Allow DNS resolution
+      to {
+        namespace_selector {}
+      }
+
+      ports {
+        protocol = "UDP"
+        port     = "53"
+      }
+    }
+
+    egress {
+      # Allow external connections (for ML models, etc.)
+      to {
+        ip_block {
+          cidr = "0.0.0.0/0"
+        }
+      }
+    }
+  }
+}
+
+# Network Policy for Milvus
+# Restricts access to only Langflow Runtime workers
+resource "kubernetes_network_policy" "milvus" {
+  count = var.enable_network_policy && var.vector_db == "milvus" ? 1 : 0
+
+  metadata {
+    name      = "milvus-network-policy"
+    namespace = var.namespace
+    labels    = local.labels
+  }
+
+  spec {
+    pod_selector {
+      match_labels = {
+        app = "milvus"
+      }
+    }
+
+    policy_types = ["Ingress", "Egress"]
+
+    # Ingress rules - who can connect TO Milvus
+    ingress {
+      # Allow from Langflow Runtime workers
+      from {
+        pod_selector {
+          match_labels = {
+            app = "langflow-runtime"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "19530" # gRPC API
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "9091" # Metrics
+      }
+    }
+
+    # Egress rules - where Milvus can connect TO
+    egress {
+      # Allow DNS resolution
+      to {
+        namespace_selector {}
+      }
+
+      ports {
+        protocol = "UDP"
+        port     = "53"
+      }
+    }
+
+    egress {
+      # Allow connections to etcd (Milvus dependency)
+      to {
+        pod_selector {
+          match_labels = {
+            app = "milvus-etcd"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "2379"
+      }
+    }
+
+    egress {
+      # Allow connections to MinIO (Milvus dependency)
+      to {
+        pod_selector {
+          match_labels = {
+            app = "milvus-minio"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "9000"
+      }
+    }
+
+    egress {
+      # Allow external connections if needed
+      to {
+        ip_block {
+          cidr = "0.0.0.0/0"
+        }
+      }
+    }
+  }
 }

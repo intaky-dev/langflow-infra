@@ -84,34 +84,58 @@ resource "kubectl_manifest" "scaled_object_rabbitmq" {
         name       = var.target_deployment
       }
 
-      pollingInterval  = 10
-      cooldownPeriod   = 60
-      minReplicaCount  = var.min_replicas
-      maxReplicaCount  = var.max_replicas
+      # Polling and scaling intervals
+      pollingInterval = 10 # Check metrics every 10 seconds
+      cooldownPeriod  = 60 # Wait 60s after scale down before checking again
 
+      # Replica bounds
+      minReplicaCount = var.min_replicas
+      maxReplicaCount = var.max_replicas
+
+      # Advanced HPA configuration
       advanced = {
+        restoreToOriginalReplicaCount = false # Don't restore to original count
         horizontalPodAutoscalerConfig = {
           behavior = {
+            # Scale down conservatively to avoid disruptions
             scaleDown = {
-              stabilizationWindowSeconds = 300
-              policies = [{
-                type          = "Percent"
-                value         = 50
-                periodSeconds = 60
-              }]
+              stabilizationWindowSeconds = 300 # Wait 5 min before scaling down
+              selectPolicy               = "Min"
+              policies = [
+                {
+                  type          = "Percent"
+                  value         = 50 # Max 50% reduction per cycle
+                  periodSeconds = 60
+                },
+                {
+                  type          = "Pods"
+                  value         = 1 # Or 1 pod at a time
+                  periodSeconds = 60
+                }
+              ]
             }
+
+            # Scale up aggressively to handle load spikes
             scaleUp = {
-              stabilizationWindowSeconds = 0
-              policies = [{
-                type          = "Percent"
-                value         = 100
-                periodSeconds = 30
-              }, {
-                type          = "Pods"
-                value         = 2
-                periodSeconds = 30
-              }]
-              selectPolicy = "Max"
+              stabilizationWindowSeconds = 0 # No delay on scale up
+              selectPolicy               = "Max"
+              policies = [
+                {
+                  type          = "Percent"
+                  value         = 100 # Double pods if needed
+                  periodSeconds = 30
+                },
+                {
+                  type          = "Pods"
+                  value         = 2 # Or add 2 pods
+                  periodSeconds = 30
+                },
+                {
+                  type          = "Pods"
+                  value         = 4 # Or add 4 pods for extreme load
+                  periodSeconds = 60
+                }
+              ]
             }
           }
         }
@@ -122,17 +146,17 @@ resource "kubectl_manifest" "scaled_object_rabbitmq" {
         {
           type = "rabbitmq"
           metadata = {
-            protocol          = "auto"
-            host              = var.broker_connection_url
-            mode              = "QueueLength"
-            value             = tostring(var.queue_length_threshold)
-            queueName         = var.queue_name
-            activationValue   = "0"
+            protocol        = "auto"
+            host            = var.broker_connection_url
+            mode            = "QueueLength"
+            value           = tostring(var.queue_length_threshold)
+            queueName       = var.queue_name
+            activationValue = "0"
           }
         },
         # CPU utilization trigger
         {
-          type = "cpu"
+          type       = "cpu"
           metricType = "Utilization"
           metadata = {
             value = tostring(var.cpu_threshold)
@@ -140,7 +164,7 @@ resource "kubectl_manifest" "scaled_object_rabbitmq" {
         },
         # Memory utilization trigger
         {
-          type = "memory"
+          type       = "memory"
           metricType = "Utilization"
           metadata = {
             value = tostring(var.memory_threshold)
@@ -172,34 +196,58 @@ resource "kubectl_manifest" "scaled_object_redis" {
         name       = var.target_deployment
       }
 
-      pollingInterval  = 10
-      cooldownPeriod   = 60
-      minReplicaCount  = var.min_replicas
-      maxReplicaCount  = var.max_replicas
+      # Polling and scaling intervals
+      pollingInterval = 10 # Check metrics every 10 seconds
+      cooldownPeriod  = 60 # Wait 60s after scale down before checking again
 
+      # Replica bounds
+      minReplicaCount = var.min_replicas
+      maxReplicaCount = var.max_replicas
+
+      # Advanced HPA configuration
       advanced = {
+        restoreToOriginalReplicaCount = false # Don't restore to original count
         horizontalPodAutoscalerConfig = {
           behavior = {
+            # Scale down conservatively to avoid disruptions
             scaleDown = {
-              stabilizationWindowSeconds = 300
-              policies = [{
-                type          = "Percent"
-                value         = 50
-                periodSeconds = 60
-              }]
+              stabilizationWindowSeconds = 300 # Wait 5 min before scaling down
+              selectPolicy               = "Min"
+              policies = [
+                {
+                  type          = "Percent"
+                  value         = 50 # Max 50% reduction per cycle
+                  periodSeconds = 60
+                },
+                {
+                  type          = "Pods"
+                  value         = 1 # Or 1 pod at a time
+                  periodSeconds = 60
+                }
+              ]
             }
+
+            # Scale up aggressively to handle load spikes
             scaleUp = {
-              stabilizationWindowSeconds = 0
-              policies = [{
-                type          = "Percent"
-                value         = 100
-                periodSeconds = 30
-              }, {
-                type          = "Pods"
-                value         = 2
-                periodSeconds = 30
-              }]
-              selectPolicy = "Max"
+              stabilizationWindowSeconds = 0 # No delay on scale up
+              selectPolicy               = "Max"
+              policies = [
+                {
+                  type          = "Percent"
+                  value         = 100 # Double pods if needed
+                  periodSeconds = 30
+                },
+                {
+                  type          = "Pods"
+                  value         = 2 # Or add 2 pods
+                  periodSeconds = 30
+                },
+                {
+                  type          = "Pods"
+                  value         = 4 # Or add 4 pods for extreme load
+                  periodSeconds = 60
+                }
+              ]
             }
           }
         }
@@ -210,15 +258,15 @@ resource "kubectl_manifest" "scaled_object_redis" {
         {
           type = "redis"
           metadata = {
-            address             = var.broker_connection_url
-            listName            = var.queue_name
-            listLength          = tostring(var.queue_length_threshold)
+            address              = var.broker_connection_url
+            listName             = var.queue_name
+            listLength           = tostring(var.queue_length_threshold)
             activationListLength = "0"
           }
         },
         # CPU utilization trigger
         {
-          type = "cpu"
+          type       = "cpu"
           metricType = "Utilization"
           metadata = {
             value = tostring(var.cpu_threshold)
@@ -226,7 +274,7 @@ resource "kubectl_manifest" "scaled_object_redis" {
         },
         # Memory utilization trigger
         {
-          type = "memory"
+          type       = "memory"
           metricType = "Utilization"
           metadata = {
             value = tostring(var.memory_threshold)

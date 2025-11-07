@@ -227,7 +227,7 @@ resource "kubernetes_stateful_set" "langflow_runtime" {
     # Persistent volume for worker data
     volume_claim_template {
       metadata {
-        name = "worker-data"
+        name   = "worker-data"
         labels = local.labels
       }
 
@@ -282,7 +282,7 @@ resource "kubernetes_service" "langflow_runtime" {
       protocol    = "TCP"
     }
 
-    cluster_ip = "None"  # Headless service
+    cluster_ip = "None" # Headless service
   }
 }
 

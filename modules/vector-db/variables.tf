@@ -35,3 +35,9 @@ variable "storage_class" {
   type        = string
   default     = "standard"
 }
+
+variable "enable_network_policy" {
+  description = "Enable network policies for vector database security"
+  type        = bool
+  default     = true
+}

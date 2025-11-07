@@ -24,8 +24,8 @@ resource "helm_release" "rabbitmq" {
       replicaCount = var.rabbitmq_replicas
 
       auth = {
-        username = "langflow"
-        password = random_password.broker_password.result
+        username     = "langflow"
+        password     = random_password.broker_password.result
         erlangCookie = random_password.erlang_cookie[0].result
       }
 
@@ -90,11 +90,11 @@ resource "helm_release" "redis" {
         password = random_password.broker_password.result
       }
 
-      # Use latest tag - only tag guaranteed to exist after Bitnami migration
+      # Use specific version for reproducible deployments
       image = {
         registry   = "docker.io"
         repository = "bitnami/redis"
-        tag        = "latest"
+        tag        = "7.4.1"
       }
 
       sentinel = {
@@ -102,7 +102,7 @@ resource "helm_release" "redis" {
         image = {
           registry   = "docker.io"
           repository = "bitnami/redis-sentinel"
-          tag        = "latest"
+          tag        = "7.4.1"
         }
       }
 
@@ -111,7 +111,7 @@ resource "helm_release" "redis" {
         image = {
           registry   = "docker.io"
           repository = "bitnami/redis-exporter"
-          tag        = "latest"
+          tag        = "1.66.0"
         }
         serviceMonitor = {
           enabled = false
@@ -210,5 +210,225 @@ locals {
   broker_host = var.broker_type == "rabbitmq" ? "rabbitmq.${var.namespace}.svc.cluster.local" : "redis.${var.namespace}.svc.cluster.local"
   broker_port = var.broker_type == "rabbitmq" ? "5672" : "6379"
 
-  connection_string = var.broker_type == "rabbitmq" ? "amqp://langflow:${random_password.broker_password.result}@${local.broker_host}:${local.broker_port}/" : "redis://:${random_password.broker_password.result}@${local.broker_host}:${local.broker_port}/0"
+  connection_string = var.broker_type == "rabbitmq" ? "amqp://langflow:${urlencode(random_password.broker_password.result)}@${local.broker_host}:${local.broker_port}/" : "redis://:${urlencode(random_password.broker_password.result)}@${local.broker_host}:${local.broker_port}/0"
+}
+
+# Network Policy for RabbitMQ
+# Restricts access to only Langflow Runtime workers and KEDA
+resource "kubernetes_network_policy" "rabbitmq" {
+  count = var.enable_network_policy && var.broker_type == "rabbitmq" ? 1 : 0
+
+  metadata {
+    name      = "rabbitmq-network-policy"
+    namespace = var.namespace
+    labels    = local.labels
+  }
+
+  spec {
+    pod_selector {
+      match_labels = {
+        app = "rabbitmq"
+      }
+    }
+
+    policy_types = ["Ingress", "Egress"]
+
+    # Ingress rules - who can connect TO RabbitMQ
+    ingress {
+      # Allow from Langflow Runtime workers
+      from {
+        pod_selector {
+          match_labels = {
+            app = "langflow-runtime"
+          }
+        }
+      }
+
+      # Allow from KEDA for metrics scraping
+      from {
+        namespace_selector {
+          match_labels = {
+            name = "keda-system"
+          }
+        }
+      }
+
+      # Allow internal RabbitMQ cluster communication
+      from {
+        pod_selector {
+          match_labels = {
+            app = "rabbitmq"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "5672" # AMQP
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "15672" # Management UI
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "4369" # EPMD (Erlang Port Mapper Daemon)
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "25672" # Inter-node communication
+      }
+    }
+
+    # Egress rules - where RabbitMQ can connect TO
+    egress {
+      # Allow DNS resolution
+      to {
+        namespace_selector {}
+      }
+
+      ports {
+        protocol = "UDP"
+        port     = "53"
+      }
+    }
+
+    egress {
+      # Allow internal RabbitMQ cluster communication
+      to {
+        pod_selector {
+          match_labels = {
+            app = "rabbitmq"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "4369"
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "25672"
+      }
+    }
+
+    egress {
+      # Allow external connections if needed
+      to {
+        ip_block {
+          cidr = "0.0.0.0/0"
+        }
+      }
+    }
+  }
+}
+
+# Network Policy for Redis
+# Restricts access to only Langflow Runtime workers and KEDA
+resource "kubernetes_network_policy" "redis" {
+  count = var.enable_network_policy && var.broker_type == "redis" ? 1 : 0
+
+  metadata {
+    name      = "redis-network-policy"
+    namespace = var.namespace
+    labels    = local.labels
+  }
+
+  spec {
+    pod_selector {
+      match_labels = {
+        app = "redis"
+      }
+    }
+
+    policy_types = ["Ingress", "Egress"]
+
+    # Ingress rules - who can connect TO Redis
+    ingress {
+      # Allow from Langflow Runtime workers
+      from {
+        pod_selector {
+          match_labels = {
+            app = "langflow-runtime"
+          }
+        }
+      }
+
+      # Allow from KEDA for metrics scraping
+      from {
+        namespace_selector {
+          match_labels = {
+            name = "keda-system"
+          }
+        }
+      }
+
+      # Allow internal Redis replication (master-replica communication)
+      from {
+        pod_selector {
+          match_labels = {
+            app = "redis"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "6379" # Redis port
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "26379" # Sentinel port
+      }
+    }
+
+    # Egress rules - where Redis can connect TO
+    egress {
+      # Allow DNS resolution
+      to {
+        namespace_selector {}
+      }
+
+      ports {
+        protocol = "UDP"
+        port     = "53"
+      }
+    }
+
+    egress {
+      # Allow internal Redis replication
+      to {
+        pod_selector {
+          match_labels = {
+            app = "redis"
+          }
+        }
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "6379"
+      }
+
+      ports {
+        protocol = "TCP"
+        port     = "26379"
+      }
+    }
+
+    egress {
+      # Allow external connections if needed
+      to {
+        ip_block {
+          cidr = "0.0.0.0/0"
+        }
+      }
+    }
+  }
 }

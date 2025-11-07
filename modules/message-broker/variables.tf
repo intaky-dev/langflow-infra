@@ -41,3 +41,9 @@ variable "redis_storage_size" {
   type        = string
   default     = "5Gi"
 }
+
+variable "enable_network_policy" {
+  description = "Enable network policies for message broker security"
+  type        = bool
+  default     = true
+}

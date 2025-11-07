@@ -35,9 +35,9 @@ resource "helm_release" "nginx_ingress" {
         }
 
         autoscaling = {
-          enabled     = true
-          minReplicas = 2
-          maxReplicas = 10
+          enabled                        = true
+          minReplicas                    = 2
+          maxReplicas                    = 10
           targetCPUUtilizationPercentage = 80
         }
 
@@ -58,16 +58,16 @@ resource "helm_release" "nginx_ingress" {
 
         # Security configurations
         config = {
-          use-forwarded-headers = "true"
+          use-forwarded-headers      = "true"
           compute-full-forwarded-for = "true"
-          use-proxy-protocol = "false"
-          enable-real-ip = "true"
-          proxy-body-size = "100m"
-          proxy-connect-timeout = "60"
-          proxy-send-timeout = "60"
-          proxy-read-timeout = "60"
-          ssl-protocols = "TLSv1.2 TLSv1.3"
-          ssl-ciphers = "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+          use-proxy-protocol         = "false"
+          enable-real-ip             = "true"
+          proxy-body-size            = "100m"
+          proxy-connect-timeout      = "60"
+          proxy-send-timeout         = "60"
+          proxy-read-timeout         = "60"
+          ssl-protocols              = "TLSv1.2 TLSv1.3"
+          ssl-ciphers                = "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
         }
 
         podLabels = local.labels
@@ -200,12 +200,12 @@ resource "kubernetes_ingress_v1" "langflow_ide" {
     labels    = local.labels
     annotations = merge(
       {
-        "nginx.ingress.kubernetes.io/proxy-body-size"       = "100m"
-        "nginx.ingress.kubernetes.io/proxy-read-timeout"    = "3600"
-        "nginx.ingress.kubernetes.io/proxy-send-timeout"    = "3600"
-        "nginx.ingress.kubernetes.io/websocket-services"    = "langflow-ide"
-        "nginx.ingress.kubernetes.io/affinity"              = "cookie"
-        "nginx.ingress.kubernetes.io/session-cookie-name"   = "langflow-ide"
+        "nginx.ingress.kubernetes.io/proxy-body-size"     = "100m"
+        "nginx.ingress.kubernetes.io/proxy-read-timeout"  = "3600"
+        "nginx.ingress.kubernetes.io/proxy-send-timeout"  = "3600"
+        "nginx.ingress.kubernetes.io/websocket-services"  = "langflow-ide"
+        "nginx.ingress.kubernetes.io/affinity"            = "cookie"
+        "nginx.ingress.kubernetes.io/session-cookie-name" = "langflow-ide"
       },
       var.tls_enabled && var.cert_manager ? {
         "cert-manager.io/cluster-issuer" = "letsencrypt-prod"
