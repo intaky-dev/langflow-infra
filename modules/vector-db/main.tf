@@ -15,8 +15,10 @@ resource "helm_release" "qdrant" {
   name       = "qdrant"
   repository = "https://qdrant.github.io/qdrant-helm"
   chart      = "qdrant"
-  # version    = "0.8.0"  # Removed - let Helm use latest
+  version    = "1.15.5"
   namespace  = var.namespace
+
+  timeout = 600
 
   values = [
     yamlencode({
