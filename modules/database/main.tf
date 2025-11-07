@@ -22,8 +22,6 @@ resource "helm_release" "postgresql" {
   version    = "16.3.2"
   namespace  = var.namespace
 
-  timeout = 900
-
   values = [
     yamlencode({
       # Global settings

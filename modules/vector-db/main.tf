@@ -18,8 +18,6 @@ resource "helm_release" "qdrant" {
   version    = "1.15.5"
   namespace  = var.namespace
 
-  timeout = 600
-
   values = [
     yamlencode({
       replicaCount = var.replicas
