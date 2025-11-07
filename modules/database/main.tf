@@ -19,7 +19,7 @@ resource "helm_release" "postgresql" {
   name       = "postgresql"
   repository = "https://charts.bitnami.com/bitnami"
   chart      = "postgresql-ha"
-  version    = "16.3.2"
+  version    = "14.2.32"
   namespace  = var.namespace
 
   values = [
@@ -41,7 +41,7 @@ resource "helm_release" "postgresql" {
         image = {
           registry   = "docker.io"
           repository = "bitnami/postgresql-repmgr"
-          tag        = "17.2.0"
+          tag        = "16.4.0-debian-12-r13"
         }
 
         replicaCount = var.postgres_replicas
@@ -128,7 +128,7 @@ resource "helm_release" "postgresql" {
         image = {
           registry   = "docker.io"
           repository = "bitnami/pgpool"
-          tag        = "4.6.1"
+          tag        = "4.5.4-debian-12-r3"
         }
 
         replicaCount = var.postgres_replicas >= 3 ? 2 : 1
