@@ -41,7 +41,7 @@ resource "helm_release" "postgresql" {
         image = {
           registry   = "docker.io"
           repository = "bitnami/postgresql-repmgr"
-          tag        = "16.4.0-debian-12-r13"
+          tag        = "16.4.0"
         }
 
         replicaCount = var.postgres_replicas
@@ -128,7 +128,7 @@ resource "helm_release" "postgresql" {
         image = {
           registry   = "docker.io"
           repository = "bitnami/pgpool"
-          tag        = "4.5.4-debian-12-r3"
+          tag        = "4.5.0"
         }
 
         replicaCount = var.postgres_replicas >= 3 ? 2 : 1
