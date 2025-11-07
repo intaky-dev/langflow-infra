@@ -19,7 +19,7 @@ resource "helm_release" "postgresql" {
   name       = "postgresql"
   repository = "https://charts.bitnami.com/bitnami"
   chart      = "postgresql-ha"
-  version    = "14.2.32"
+  version    = "15.2.1"
   namespace  = var.namespace
 
   values = [
@@ -37,14 +37,14 @@ resource "helm_release" "postgresql" {
 
       # PostgreSQL configuration
       postgresql = {
-        # Explicit image tag required by Terraform Helm provider
+        replicaCount = var.postgres_replicas
+
+        # Specify image versions explicitly to avoid "not found" errors
         image = {
           registry   = "docker.io"
           repository = "bitnami/postgresql-repmgr"
-          tag        = "16.4.0"
+          tag        = "16.6.0"
         }
-
-        replicaCount = var.postgres_replicas
 
         # Persistence configuration
         persistence = {
@@ -124,14 +124,14 @@ resource "helm_release" "postgresql" {
 
       # PgPool Configuration - Load Balancer and Connection Pooler
       pgpool = {
-        # Explicit image tag required by Terraform Helm provider
+        replicaCount = var.postgres_replicas >= 3 ? 2 : 1
+
+        # Specify image version explicitly
         image = {
           registry   = "docker.io"
           repository = "bitnami/pgpool"
-          tag        = "4.5.0"
+          tag        = "4.5.5"
         }
-
-        replicaCount = var.postgres_replicas >= 3 ? 2 : 1
 
         # Resource allocation for PgPool
         resources = {
