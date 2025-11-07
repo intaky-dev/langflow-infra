@@ -19,7 +19,7 @@ resource "helm_release" "postgresql" {
   name       = "postgresql"
   repository = "https://charts.bitnami.com/bitnami"
   chart      = "postgresql-ha"
-  version    = "16.3.2"  # Latest stable version
+  # version    = "15.0.0"  # Removed - let Helm use latest
   namespace  = var.namespace
 
   values = [

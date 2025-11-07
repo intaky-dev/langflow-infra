@@ -89,13 +89,8 @@ resource "kubernetes_deployment" "langflow_ide" {
           }
 
           env {
-            name  = "LANGFLOW_FRONTEND_PATH"
-            value = "/app/frontend"
-          }
-
-          env {
             name  = "LANGFLOW_BACKEND_ONLY"
-            value = "false"
+            value = "true"
           }
 
           # Performance settings
