@@ -15,7 +15,7 @@ resource "helm_release" "qdrant" {
   name       = "qdrant"
   repository = "https://qdrant.github.io/qdrant-helm"
   chart      = "qdrant"
-  version    = "~> 0.7"
+  version    = "0.8.6"
   namespace  = var.namespace
 
   values = [

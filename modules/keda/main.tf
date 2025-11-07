@@ -13,7 +13,7 @@ resource "helm_release" "keda" {
   name       = "keda"
   repository = "https://kedacore.github.io/charts"
   chart      = "keda"
-  version    = "~> 2.13"
+  version    = "2.15.1"
   namespace  = "keda-system"
 
   create_namespace = true
