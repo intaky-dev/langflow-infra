@@ -1,0 +1,87 @@
+# Configuración para k3s - Servidor de Producción
+# ========================================================
+
+# Kubernetes Configuration
+kubeconfig_path = "/etc/rancher/k3s/k3s.yaml"  # k3s kubeconfig en el servidor
+kube_context    = "" # Deja vacío para usar el contexto actual
+
+namespace      = "langflow"
+environment    = "dev"
+cloud_provider = "onprem" # k3s cluster
+
+# Langflow Version - usando versión fija para reproducibilidad
+langflow_version = "1.0.18"
+
+# Message Broker - Redis (más ligero que RabbitMQ)
+broker_type        = "redis"
+redis_replicas     = 1
+redis_storage_size = "2Gi"
+queue_name         = "langflow-tasks"
+
+# Database - PostgreSQL con configuración mínima
+postgres_replicas     = 1
+postgres_storage_size = "5Gi"
+
+# Vector Database - Qdrant (el más ligero)
+vector_db_type         = "qdrant"
+vector_db_replicas     = 1
+vector_db_storage_size = "5Gi"
+
+# Langflow IDE - Configuración mínima
+ide_replicas = 1
+ide_resources = {
+  requests = {
+    cpu    = "250m"
+    memory = "512Mi"
+  }
+  limits = {
+    cpu    = "1000m"
+    memory = "2Gi"
+  }
+}
+
+# Langflow Runtime Workers - Configuración mínima
+runtime_min_replicas        = 1
+runtime_max_replicas        = 2
+runtime_worker_storage_size = "5Gi" # Storage para cada worker
+runtime_resources = {
+  requests = {
+    cpu    = "500m"
+    memory = "1Gi"
+  }
+  limits = {
+    cpu    = "2000m"
+    memory = "4Gi"
+  }
+}
+
+# KEDA Autoscaling - Configuración básica
+keda_queue_threshold  = 5
+keda_cpu_threshold    = 70
+keda_memory_threshold = 80
+
+# Storage - Para k3s usar local-path
+storage_class = "local-path" # k3s storage class
+
+# Ingress - DESHABILITADO para pruebas locales (usar port-forward)
+ingress_enabled      = false
+ingress_class        = "nginx"
+ide_ingress_host     = "langflow.local"
+runtime_ingress_host = "langflow-api.local"
+tls_enabled          = false
+cert_manager_enabled = false
+
+# Observability - DESHABILITADO para ahorrar recursos (opcional: cambiar a true)
+enable_observability    = false
+prometheus_enabled      = false
+grafana_enabled         = false
+loki_enabled            = false
+grafana_ingress_host    = "grafana.local"
+prometheus_storage_size = "5Gi"
+loki_storage_size       = "5Gi"
+
+# NOTA: Para habilitar observabilidad, cambia enable_observability a true
+# y ajusta prometheus_enabled, grafana_enabled, loki_enabled según necesites
+
+# Network Policies - Habilitadas para seguridad
+enable_network_policies = true
