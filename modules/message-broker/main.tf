@@ -83,7 +83,8 @@ resource "helm_release" "redis" {
 
   values = [
     yamlencode({
-      architecture = "replication"
+      # Use standalone for dev (1 node) or replication for prod (multiple nodes)
+      architecture = var.redis_replicas > 1 ? "replication" : "standalone"
 
       auth = {
         enabled  = true
@@ -97,13 +98,16 @@ resource "helm_release" "redis" {
         tag        = "7.4.1"
       }
 
-      sentinel = {
+      # Sentinel only for replication mode
+      sentinel = var.redis_replicas > 1 ? {
         enabled = true
         image = {
           registry   = "docker.io"
           repository = "bitnami/redis-sentinel"
           tag        = "7.4.1"
         }
+      } : {
+        enabled = false
       }
 
       metrics = {
@@ -135,7 +139,8 @@ resource "helm_release" "redis" {
         }
       }
 
-      replica = {
+      # Only configure replicas if redis_replicas > 1
+      replica = var.redis_replicas > 1 ? {
         replicaCount = var.redis_replicas - 1
         persistence = {
           enabled = true
@@ -151,6 +156,8 @@ resource "helm_release" "redis" {
             memory = "1Gi"
           }
         }
+      } : {
+        replicaCount = 0
       }
 
       commonLabels = local.labels
