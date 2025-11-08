@@ -99,15 +99,13 @@ resource "helm_release" "redis" {
       }
 
       # Sentinel only for replication mode
-      sentinel = var.redis_replicas > 1 ? {
-        enabled = true
+      sentinel = {
+        enabled = var.redis_replicas > 1
         image = {
           registry   = "docker.io"
           repository = "bitnami/redis-sentinel"
           tag        = "7.4.1"
         }
-      } : {
-        enabled = false
       }
 
       metrics = {
@@ -140,8 +138,8 @@ resource "helm_release" "redis" {
       }
 
       # Only configure replicas if redis_replicas > 1
-      replica = var.redis_replicas > 1 ? {
-        replicaCount = var.redis_replicas - 1
+      replica = {
+        replicaCount = var.redis_replicas > 1 ? var.redis_replicas - 1 : 0
         persistence = {
           enabled = true
           size    = var.redis_storage_size
@@ -156,8 +154,6 @@ resource "helm_release" "redis" {
             memory = "1Gi"
           }
         }
-      } : {
-        replicaCount = 0
       }
 
       commonLabels = local.labels
