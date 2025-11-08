@@ -91,30 +91,13 @@ resource "helm_release" "redis" {
         password = random_password.broker_password.result
       }
 
-      # Use specific version for reproducible deployments
-      image = {
-        registry   = "docker.io"
-        repository = "bitnami/redis"
-        tag        = "7.4.1"
-      }
-
       # Sentinel only for replication mode
       sentinel = {
         enabled = var.redis_replicas > 1
-        image = {
-          registry   = "docker.io"
-          repository = "bitnami/redis-sentinel"
-          tag        = "7.4.1"
-        }
       }
 
       metrics = {
         enabled = true
-        image = {
-          registry   = "docker.io"
-          repository = "bitnami/redis-exporter"
-          tag        = "1.66.0"
-        }
         serviceMonitor = {
           enabled = false
         }
